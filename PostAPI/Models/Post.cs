@@ -1,4 +1,4 @@
-namespace PostAPI
+namespace PostAPI.Models
 {
     public class WeatherForecast
     {
