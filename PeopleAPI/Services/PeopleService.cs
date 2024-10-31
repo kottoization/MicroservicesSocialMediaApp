@@ -1,7 +1,7 @@
 ﻿using PeopleAPI.Data;
-using PeopleAPI.DTOs;
+using PeopleAPI.DTO;
 using PeopleAPI.Models;
-using Microsoft.EntityFrameworkCore;
+//using Microsoft.EntityFrameworkCore;
 using PeopleAPI.DTO;
 using System.Data.Entity;
 

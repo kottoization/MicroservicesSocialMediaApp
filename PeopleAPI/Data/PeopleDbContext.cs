@@ -5,7 +5,7 @@ namespace PeopleAPI.Data
 {
     public class PeopleDbContext : DbContext
     {
-        public PeopleDbContext(DbContextOptions<PeopleDbContext> options) : base(options) { }
+       // public PeopleDbContext(DbContextOptions<PeopleDbContext> options) : base(options) { }
         public DbSet<User> Users { get; set; }
     }
 }
