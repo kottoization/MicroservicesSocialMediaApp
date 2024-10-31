@@ -1,13 +1,13 @@
 namespace PostAPI.Models
 {
-    public class WeatherForecast
+    public class Post
     {
-        public DateTime Date { get; set; }
+        public Guid Id { get; set; }
+        public Guid UserId { get; set; } // Id u¿ytkownika tworz¹cego post
+        public string Content { get; set; }
+        public DateTime CreatedAt { get; set; }
 
-        public int TemperatureC { get; set; }
-
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-
-        public string? Summary { get; set; }
+        public ICollection<Comment> Comments { get; set; }
     }
+
 }
