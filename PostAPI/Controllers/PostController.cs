@@ -2,6 +2,10 @@
 using PostAPI.DTOs;
 using PostAPI.Models;
 using PostAPI.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace PostAPI.Controllers
 {
@@ -10,21 +14,17 @@ namespace PostAPI.Controllers
     public class PostController : ControllerBase
     {
         private readonly IPostService _postService;
-        private readonly IMapper _mapper;
-        //TODO: MAPPER CO JEST XDDD
 
-
-        public PostController(IPostService postService/*, IMapper mapper*/)
+        public PostController(IPostService postService)
         {
             _postService = postService;
-            _mapper = mapper;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetPosts()
         {
             var posts = await _postService.GetAllAsync();
-            var postsDto = _mapper.Map<IEnumerable<PostDto>>(posts);
+            var postsDto = posts.Select(p => MapToPostDto(p)).ToList();
             return Ok(postsDto);
         }
 
@@ -35,29 +35,27 @@ namespace PostAPI.Controllers
             if (post == null)
                 return NotFound();
 
-            var postDto = _mapper.Map<PostDto>(post);
+            var postDto = MapToPostDto(post);
             return Ok(postDto);
         }
 
-        //[Authorize]
         [HttpPost]
         public async Task<IActionResult> CreatePost([FromBody] CreatePostDto createPostDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var post = _mapper.Map<Post>(createPostDto);
+            var post = MapToPost(createPostDto);
             post.Id = Guid.NewGuid();
-            post.UserId = GetCurrentUserId(); // Pobierz ID zalogowanego użytkownika
+            post.UserId = GetCurrentUserId();
             post.CreatedAt = DateTime.UtcNow;
 
             await _postService.CreateAsync(post);
 
-            var postDto = _mapper.Map<PostDto>(post);
+            var postDto = MapToPostDto(post);
             return CreatedAtAction(nameof(GetPost), new { id = postDto.Id }, postDto);
         }
 
-        //[Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePost(Guid id, [FromBody] UpdatePostDto updatePostDto)
         {
@@ -68,17 +66,15 @@ namespace PostAPI.Controllers
             if (existingPost == null)
                 return NotFound();
 
-            // Sprawdź, czy użytkownik jest właścicielem posta
             if (existingPost.UserId != GetCurrentUserId())
                 return Forbid();
 
-            _mapper.Map(updatePostDto, existingPost);
+            UpdatePostFromDto(existingPost, updatePostDto);
             await _postService.UpdateAsync(existingPost);
 
             return NoContent();
         }
 
-        //[Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePost(Guid id)
         {
@@ -86,7 +82,6 @@ namespace PostAPI.Controllers
             if (existingPost == null)
                 return NotFound();
 
-            // Sprawdź, czy użytkownik jest właścicielem posta
             if (existingPost.UserId != GetCurrentUserId())
                 return Forbid();
 
@@ -96,9 +91,32 @@ namespace PostAPI.Controllers
 
         private Guid GetCurrentUserId()
         {
-            // Pobierz ID zalogowanego użytkownika z tokena JWT
             var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             return Guid.Parse(userIdString);
+        }
+
+        private PostDto MapToPostDto(Post post)
+        {
+            return new PostDto
+            {
+                Id = post.Id,
+                UserId = post.UserId,
+                Content = post.Content,
+                CreatedAt = post.CreatedAt
+            };
+        }
+
+        private Post MapToPost(CreatePostDto createPostDto)
+        {
+            return new Post
+            {
+                Content = createPostDto.Content
+            };
+        }
+
+        private void UpdatePostFromDto(Post post, UpdatePostDto updatePostDto)
+        {
+            post.Content = updatePostDto.Content;
         }
     }
 }

@@ -12,7 +12,6 @@ namespace PostAPI.Services
 
         public async Task<IEnumerable<Post>> GetAllAsync()
         {
-            // W rzeczywistości użyłbyś bazy danych. Tu dla prostoty używamy listy w pamięci.
             return await Task.FromResult(_posts);
         }
 
@@ -40,7 +39,6 @@ namespace PostAPI.Services
             if (existingPost != null)
             {
                 existingPost.Content = post.Content;
-                // Zaktualizuj inne pola według potrzeb
             }
             await Task.CompletedTask;
         }
