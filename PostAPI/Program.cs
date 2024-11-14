@@ -11,7 +11,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Register services
-builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddSingleton<IPostService, PostService>();
 
 var app = builder.Build();
 
