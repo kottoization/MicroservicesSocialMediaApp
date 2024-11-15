@@ -1,10 +1,10 @@
-﻿using IdentityAPI.Models;
-using IdentityAPI.Models.Dto;
-using IdentityAPI.Services;
+﻿using IdentityAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SharedModels.Models;
+using SharedModels.Models.Dto;
 using System.Security.Claims;
 
 namespace IdentityAPI.Controllers

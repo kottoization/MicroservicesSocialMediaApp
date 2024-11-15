@@ -1,4 +1,4 @@
-﻿namespace PostAPI.Models
+﻿namespace SharedModels.Models
 {
     public class Comment
     {

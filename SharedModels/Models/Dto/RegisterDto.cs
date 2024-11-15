@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace IdentityAPI.Models.Dto
+namespace SharedModels.Models.Dto
 {
     public class RegisterDto
     {
