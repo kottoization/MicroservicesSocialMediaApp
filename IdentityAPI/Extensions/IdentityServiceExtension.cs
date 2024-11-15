@@ -1,8 +1,8 @@
-﻿using IdentityAPI.Models;
-using IdentityAPI.Services;
+﻿using IdentityAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using SharedModels.Models;
 using System.Text;
 
 namespace IdentityAPI.Extensions

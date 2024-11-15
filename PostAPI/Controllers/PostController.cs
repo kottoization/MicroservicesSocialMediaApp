@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PostAPI.DTOs;
-using PostAPI.Models;
+using SharedModels.Models;
 using PostAPI.Services;
 using System;
 using System.Collections.Generic;
@@ -66,7 +66,7 @@ namespace PostAPI.Controllers
             var post = new Post
             {
                 Id = Guid.NewGuid(), // tmp
-                UserId = Guid.NewGuid(), // tmp
+                UserId = "123", // tmp
                 Content = content,
                 CreatedAt = DateTime.UtcNow
             };

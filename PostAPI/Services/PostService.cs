@@ -1,4 +1,4 @@
-﻿using PostAPI.Models;
+﻿using SharedModels.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

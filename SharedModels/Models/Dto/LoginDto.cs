@@ -1,4 +1,4 @@
-﻿namespace IdentityAPI.Models.Dto
+﻿namespace SharedModels.Models.Dto
 {
     public class LoginDto
     {
