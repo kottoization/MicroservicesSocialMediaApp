@@ -13,13 +13,6 @@ namespace IdentityAPI
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            // Konfiguracja relacji między Post a User
-            modelBuilder.Entity<Post>()
-                .HasOne(p => p.User)            
-                .WithMany()                     
-                .HasForeignKey(p => p.UserId)   
-                .OnDelete(DeleteBehavior.Restrict);  
         }
     }
 }
