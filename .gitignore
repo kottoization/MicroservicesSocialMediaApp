@@ -1,9 +1,9 @@
-# Ignoruj folder .vs
+# Ignore the .vs folder
 .vs/
 
-# Ignoruj foldery bin i obj dla każdego projektu
+# Ignore bin and obj folders for each project
 */bin/
 */obj/
 
-# Ignoruj pliki użytkownika projektu
+# Ignore project user files
 *.user
