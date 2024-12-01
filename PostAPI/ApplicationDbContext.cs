@@ -11,11 +11,7 @@ namespace PostAPI
         public DbSet<Post> Posts { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Konfiguracja relacji
-            modelBuilder.Entity<Post>()
-                .HasOne(p => p.User)
-                .WithMany()
-                .HasForeignKey(p => p.UserId);
+            base.OnModelCreating(modelBuilder);
         }
     }
 }
