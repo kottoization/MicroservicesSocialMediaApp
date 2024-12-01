@@ -61,19 +61,21 @@ namespace PostAPI.Controllers
         // tmp do usunięcia lub zmiany
 
         [HttpPost("manual")]
-        public async Task<IActionResult> CreatePostManual(string content)
+        public async Task<IActionResult> CreatePostManual(string content, string userId)
         {
+            if (string.IsNullOrEmpty(userId))
+                return BadRequest("UserId is required");
+
             var post = new Post
             {
-                Id = Guid.NewGuid(), // tmp
-                UserId = "123", // tmp
+                Id = Guid.NewGuid(),
+                UserId = userId,
                 Content = content,
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _postService.CreateAsync(post); // Asynchroniczność jest zbędna w testach lokalnych, możemy pominąć await
-            //return CreatedAtAction(nameof(GetPost), new { id = post.Id }, MapToPostDto(post));
-            return CreatedAtAction(nameof(GetPost), new { id = post.Id }, post); // Zwracamy pełny obiekt Post bez DTO
+            await _postService.CreateAsync(post);
+            return CreatedAtAction(nameof(GetPost), new { id = post.Id }, post);
         }
 
         [HttpPut("{id}")]
