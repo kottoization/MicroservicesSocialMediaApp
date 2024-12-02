@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PostAPI.DTOs;
 using SharedModels.Models;
 using PostAPI.Services;
@@ -17,7 +18,7 @@ namespace PostAPI.Controllers
 
         public PostController(IPostService postService)
         {
-            _postService = postService;
+            _postService = postService ?? throw new ArgumentNullException(nameof(postService));
         }
 
         /* [HttpGet]
@@ -27,24 +28,39 @@ namespace PostAPI.Controllers
               var postsDto = posts.Select(p => MapToPostDto(p)).ToList();
               return Ok(postsDto);
           }*/
-
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetPosts()
         {
-            // Zwrócenie pełnych obiektów Post bez użycia DTO
-            var posts = await _postService.GetAllAsync();
-            return Ok(posts); // Zwraca wszystkie obiekty Post jako JSON
+            try
+            {
+                var posts = await _postService.GetAllAsync();
+                return Ok(posts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while fetching posts.", Details = ex.Message });
+            }
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPost(Guid id)
         {
-            var post = await _postService.GetByIdAsync(id);
-            if (post == null)
-                return NotFound();
+            try
+            {
+                var post = await _postService.GetByIdAsync(id);
+                if (post == null)
+                    return NotFound(new { Message = "Post not found." });
 
-            return Ok(post); // Zwraca pełny obiekt Post bez DTO
+                return Ok(post);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while fetching the post.", Details = ex.Message });
+            }
         }
+
 
         /*[HttpGet("{id}")]
         public async Task<IActionResult> GetPost(Guid id)
@@ -59,51 +75,72 @@ namespace PostAPI.Controllers
 
 
         // tmp do usunięcia lub zmiany
-
+        [Authorize]
         [HttpPost("manual")]
         public async Task<IActionResult> CreatePostManual(string content, string userId)
         {
             if (string.IsNullOrEmpty(userId))
                 return BadRequest("UserId is required");
-
-            var post = new Post
+            try
             {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                Content = content,
-                CreatedAt = DateTime.UtcNow
-            };
+                var post = new Post
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    Content = content,
+                    CreatedAt = DateTime.UtcNow
+                };
 
-            await _postService.CreateAsync(post);
-            return CreatedAtAction(nameof(GetPost), new { id = post.Id }, post);
+                await _postService.CreateAsync(post);
+                return CreatedAtAction(nameof(GetPost), new { id = post.Id }, post);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while creating the post.", Details = ex.Message });
+
+            }
         }
-
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePost(Guid id, [FromBody] Post updatedPost)
         {
-            var existingPost = await _postService.GetByIdAsync(id);
-            if (existingPost == null)
-                return NotFound();
+            try
+            {
+                var existingPost = await _postService.GetByIdAsync(id);
+                if (existingPost == null)
+                    return NotFound();
 
-            if (existingPost.UserId != updatedPost.UserId)
-                return Forbid();
+                if (existingPost.UserId != updatedPost.UserId)
+                    return Forbid();
 
-            // Aktualizacja treści posta na podstawie przesłanego obiektu Post
-            existingPost.Content = updatedPost.Content;
-            await _postService.UpdateAsync(existingPost);
+                existingPost.Content = updatedPost.Content;
+                await _postService.UpdateAsync(existingPost);
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while updating the post.", Details = ex.Message });
+            }
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePost(Guid id)
         {
-            var existingPost = await _postService.GetByIdAsync(id);
-            if (existingPost == null)
-                return NotFound();
+            try
+            {
+                var existingPost = await _postService.GetByIdAsync(id);
+                if (existingPost == null)
+                    return NotFound();
 
-            await _postService.DeleteAsync(id);
-            return NoContent();
+                await _postService.DeleteAsync(id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while deleting the post.", Details = ex.Message });
+            }
         }
 
         /*
@@ -156,7 +193,7 @@ namespace PostAPI.Controllers
             await _postService.DeleteAsync(id);
             return NoContent();
         }*/
-
+        /*
         private Guid GetCurrentUserId()
         {
             var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -185,6 +222,7 @@ namespace PostAPI.Controllers
         private void UpdatePostFromDto(Post post, UpdatePostDto updatePostDto)
         {
             post.Content = updatePostDto.Content;
-        }
+        }*/
     }
 }
+
