@@ -172,7 +172,7 @@ namespace IdentityAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("PostId1")
+                    b.Property<Guid?>("PostId1")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UserId")
@@ -338,19 +338,15 @@ namespace IdentityAPI.Migrations
 
             modelBuilder.Entity("SharedModels.Models.Comment", b =>
                 {
-                    b.HasOne("SharedModels.Models.Post", "Post")
-                        .WithMany()
-                        .HasForeignKey("PostId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("SharedModels.Models.Post", null)
+                        .WithMany("Comments")
+                        .HasForeignKey("PostId1");
 
                     b.HasOne("SharedModels.Models.User", null)
                         .WithMany("Comments")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("SharedModels.Models.Post", b =>
@@ -362,6 +358,11 @@ namespace IdentityAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SharedModels.Models.Post", b =>
+                {
+                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("SharedModels.Models.User", b =>

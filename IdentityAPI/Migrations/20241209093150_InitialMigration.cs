@@ -185,7 +185,7 @@ namespace IdentityAPI.Migrations
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PostId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    PostId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -200,8 +200,7 @@ namespace IdentityAPI.Migrations
                         name: "FK_Comments_Posts_PostId1",
                         column: x => x.PostId1,
                         principalTable: "Posts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
