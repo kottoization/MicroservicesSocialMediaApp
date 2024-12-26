@@ -1,4 +1,5 @@
-﻿using SharedModels.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using SharedModels.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,17 +9,20 @@ namespace PostAPI.Services
 {
     public class PostService : IPostService
     {
-        private readonly List<Post> _posts = new List<Post>();
+        private readonly ApplicationDbContext _dbContext;
 
+        public PostService(ApplicationDbContext dbContext)
+        {
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        }
         public async Task<IEnumerable<Post>> GetAllAsync()
         {
-            return await Task.FromResult(_posts);
+            return await _dbContext.Posts.ToListAsync();
         }
 
         public async Task<Post> GetByIdAsync(Guid id)
         {
-            var post = _posts.FirstOrDefault(p => p.Id == id);
-            return await Task.FromResult(post);
+            return await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task CreateAsync(Post post)
@@ -26,31 +30,33 @@ namespace PostAPI.Services
             if (post == null)
                 throw new ArgumentNullException(nameof(post));
 
-            _posts.Add(post);
-            await Task.CompletedTask;
+            await _dbContext.Posts.AddAsync(post);
+            await _dbContext.SaveChangesAsync();
         }
+
 
         public async Task UpdateAsync(Post post)
         {
             if (post == null)
                 throw new ArgumentNullException(nameof(post));
 
-            var existingPost = _posts.FirstOrDefault(p => p.Id == post.Id);
+            var existingPost = await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == post.Id);
             if (existingPost != null)
             {
                 existingPost.Content = post.Content;
+                // Update other properties if needed
+                await _dbContext.SaveChangesAsync();
             }
-            await Task.CompletedTask;
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            var post = _posts.FirstOrDefault(p => p.Id == id);
+            var post = await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == id);
             if (post != null)
             {
-                _posts.Remove(post);
+                _dbContext.Posts.Remove(post);
+                await _dbContext.SaveChangesAsync();
             }
-            await Task.CompletedTask;
         }
     }
 }
