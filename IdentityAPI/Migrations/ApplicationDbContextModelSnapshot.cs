@@ -155,6 +155,39 @@ namespace IdentityAPI.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("SharedModels.Models.Comment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PostId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("PostId1")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId1");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Comments");
+                });
+
             modelBuilder.Entity("SharedModels.Models.Post", b =>
                 {
                     b.Property<Guid>("Id")
@@ -303,6 +336,19 @@ namespace IdentityAPI.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("SharedModels.Models.Comment", b =>
+                {
+                    b.HasOne("SharedModels.Models.Post", null)
+                        .WithMany("Comments")
+                        .HasForeignKey("PostId1");
+
+                    b.HasOne("SharedModels.Models.User", null)
+                        .WithMany("Comments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SharedModels.Models.Post", b =>
                 {
                     b.HasOne("SharedModels.Models.User", "User")
@@ -314,8 +360,15 @@ namespace IdentityAPI.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SharedModels.Models.Post", b =>
+                {
+                    b.Navigation("Comments");
+                });
+
             modelBuilder.Entity("SharedModels.Models.User", b =>
                 {
+                    b.Navigation("Comments");
+
                     b.Navigation("Posts");
                 });
 #pragma warning restore 612, 618
