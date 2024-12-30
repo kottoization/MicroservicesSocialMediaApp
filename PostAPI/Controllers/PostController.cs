@@ -28,7 +28,7 @@ namespace PostAPI.Controllers
               var postsDto = posts.Select(p => MapToPostDto(p)).ToList();
               return Ok(postsDto);
           }*/
-        [Authorize]
+        //[Authorize]
         [HttpGet]
         public async Task<IActionResult> GetPosts()
         {
@@ -43,7 +43,7 @@ namespace PostAPI.Controllers
             }
         }
 
-        [Authorize]
+       // [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPost(Guid id)
         {
@@ -75,7 +75,7 @@ namespace PostAPI.Controllers
 
 
         // tmp do usunięcia lub zmiany
-        [Authorize]
+       // [Authorize]
         [HttpPost("manual")]
         public async Task<IActionResult> CreatePostManual(string content, string userId)
         {
@@ -100,7 +100,7 @@ namespace PostAPI.Controllers
 
             }
         }
-        [Authorize]
+       // [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePost(Guid id, [FromBody] Post updatedPost)
         {
@@ -124,7 +124,7 @@ namespace PostAPI.Controllers
             }
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePost(Guid id)
         {
