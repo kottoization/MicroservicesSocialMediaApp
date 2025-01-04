@@ -3,47 +3,45 @@ using IdentityAPI.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.
-    AddJsonFile("appsettings.json", true, true);
+
+builder.Configuration.AddJsonFile("appsettings.json", true, true);
+
 // Add services to the container.
-
 builder.Services.AddControllers();
-
 builder.Services.AddDbContext<ApplicationDbContext>(opts =>
 {
-    opts.UseSqlServer(
-        builder.Configuration["ConnectionStrings:Connection"]);
+    opts.UseSqlServer(builder.Configuration["ConnectionStrings:Connection"]);
 });
 
+// Configure CORS
 builder.Services.AddCors(opt =>
 {
     opt.AddPolicy("CorsPolicy", policy =>
     {
-        policy
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .WithOrigins("http://localhost:3000");
+        policy.AllowAnyMethod()
+              .AllowAnyHeader()
+              .WithOrigins("http://localhost:3000");
     });
 });
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddIdentityServices(builder.Configuration);
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.UseCors("CorsPolicy");
+
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 try
@@ -53,7 +51,7 @@ try
 }
 catch (Exception ex)
 {
-    //Log.Error("Error occured during migration", ex);
+    Console.WriteLine($"Error during migration: {ex.Message}");
 }
 
 app.Run();

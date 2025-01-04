@@ -1,14 +1,18 @@
 using CommentAPI2;
 using CommentAPI2.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.json", true, true);
 
-// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Configure DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(opts =>
 {
     opts.UseSqlServer(builder.Configuration.GetConnectionString("Connection"));
@@ -17,20 +21,32 @@ builder.Services.AddDbContext<ApplicationDbContext>(opts =>
 // Register services
 builder.Services.AddScoped<ICommentService, CommentService>();
 
+// Configure JWT authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["TokenKey"])),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
+
+// Configure CORS
 builder.Services.AddCors(opt =>
 {
     opt.AddPolicy("CorsPolicy", policy =>
     {
-        policy
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .WithOrigins("http://localhost:3000");
+        policy.AllowAnyMethod()
+              .AllowAnyHeader()
+              .WithOrigins("http://localhost:3000");
     });
 });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -38,7 +54,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("CorsPolicy");
-app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -54,7 +69,6 @@ try
 catch (Exception ex)
 {
     Console.WriteLine($"Error during migration: {ex.Message}");
-    Console.WriteLine(ex.StackTrace);
 }
 
 app.Run();

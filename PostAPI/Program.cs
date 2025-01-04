@@ -1,28 +1,19 @@
-using SharedModels.Models;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using PostAPI;
 using PostAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using PostAPI;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load configuration from appsettings.json
-builder.Configuration.AddJsonFile("appsettings.json", true, true);
-
-// Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "PostAPI", Version = "v1" });
 
-    // Configure JWT in Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -30,7 +21,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Enter 'Bearer' followed by a space and then your valid token.\r\n\r\nExample: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\""
+        Description = "Enter 'Bearer' followed by a space and your JWT."
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -49,13 +40,13 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Register DbContext with SQL Server
+// Configure DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(opts =>
 {
     opts.UseSqlServer(builder.Configuration.GetConnectionString("Connection"));
 });
 
-// Register PostService with scoped lifetime
+// Register services
 builder.Services.AddScoped<IPostService, PostService>();
 
 // Configure JWT authentication
@@ -71,6 +62,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+// Configure CORS
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("CorsPolicy", policy =>
+    {
+        policy.AllowAnyMethod()
+              .AllowAnyHeader()
+              .WithOrigins("http://localhost:3000");
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
@@ -80,12 +82,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-// Apply database migrations at startup
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 try
@@ -95,9 +97,7 @@ try
 }
 catch (Exception ex)
 {
-    // Log the error during migration
     Console.WriteLine($"Error during migration: {ex.Message}");
-    Console.WriteLine(ex.StackTrace);
 }
 
 app.Run();

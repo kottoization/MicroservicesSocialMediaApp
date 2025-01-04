@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PostAPI.DTOs;
-using SharedModels.Models;
 using PostAPI.Services;
+using SharedModels.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +19,7 @@ namespace PostAPI.Controllers
 
         public PostController(IPostService postService)
         {
-            _postService = postService ?? throw new ArgumentNullException(nameof(postService));
+            _postService = postService;
         }
 
         [HttpGet]
@@ -33,6 +33,7 @@ namespace PostAPI.Controllers
                 Content = post.Content,
                 CreatedAt = post.CreatedAt
             }).ToList();
+
             return Ok(postsDto);
         }
 
@@ -69,13 +70,16 @@ namespace PostAPI.Controllers
             };
 
             await _postService.CreateAsync(post);
-            return CreatedAtAction(nameof(GetPost), new { id = post.Id }, new PostDto
+
+            var postDto = new PostDto
             {
                 Id = post.Id,
                 UserId = post.UserId,
                 Content = post.Content,
                 CreatedAt = post.CreatedAt
-            });
+            };
+
+            return CreatedAtAction(nameof(GetPost), new { id = post.Id }, postDto);
         }
 
         [HttpPut("{id}")]
