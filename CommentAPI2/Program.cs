@@ -1,17 +1,38 @@
-using IdentityAPI;
-using IdentityAPI.Extensions;
+using CommentAPI2;
+using CommentAPI2.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
 builder.Configuration.AddJsonFile("appsettings.json", true, true);
 
-// Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Configure DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(opts =>
 {
-    opts.UseSqlServer(builder.Configuration["ConnectionStrings:Connection"]);
+    opts.UseSqlServer(builder.Configuration.GetConnectionString("Connection"));
 });
+
+// Register services
+builder.Services.AddScoped<ICommentService, CommentService>();
+
+// Configure JWT authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["TokenKey"])),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
 
 // Configure CORS
 builder.Services.AddCors(opt =>
@@ -23,10 +44,6 @@ builder.Services.AddCors(opt =>
               .WithOrigins("http://localhost:3000");
     });
 });
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddIdentityServices(builder.Configuration);
 
 var app = builder.Build();
 

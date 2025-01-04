@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PostAPI.DTOs;
-using SharedModels.Models;
 using PostAPI.Services;
+using SharedModels.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,7 @@ namespace PostAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class PostController : ControllerBase
     {
         private readonly IPostService _postService;
@@ -20,20 +22,19 @@ namespace PostAPI.Controllers
             _postService = postService;
         }
 
-        /* [HttpGet]
-          public async Task<IActionResult> GetPosts()
-          {
-              var posts = await _postService.GetAllAsync();
-              var postsDto = posts.Select(p => MapToPostDto(p)).ToList();
-              return Ok(postsDto);
-          }*/
-
         [HttpGet]
         public async Task<IActionResult> GetPosts()
         {
-            // Zwrócenie pełnych obiektów Post bez użycia DTO
             var posts = await _postService.GetAllAsync();
-            return Ok(posts); // Zwraca wszystkie obiekty Post jako JSON
+            var postsDto = posts.Select(post => new PostDto
+            {
+                Id = post.Id,
+                UserId = post.UserId,
+                Content = post.Content,
+                CreatedAt = post.CreatedAt
+            }).ToList();
+
+            return Ok(postsDto);
         }
 
         [HttpGet("{id}")]
@@ -43,148 +44,72 @@ namespace PostAPI.Controllers
             if (post == null)
                 return NotFound();
 
-            return Ok(post); // Zwraca pełny obiekt Post bez DTO
-        }
-
-        /*[HttpGet("{id}")]
-        public async Task<IActionResult> GetPost(Guid id)
-        {
-            var post = await _postService.GetByIdAsync(id);
-            if (post == null)
-                return NotFound();
-
-            var postDto = MapToPostDto(post);
-            return Ok(postDto);
-        }*/
-
-
-        // tmp do usunięcia lub zmiany
-
-        [HttpPost("manual")]
-        public async Task<IActionResult> CreatePostManual(string content, string userId)
-        {
-            if (string.IsNullOrEmpty(userId))
-                return BadRequest("UserId is required");
-
-            var post = new Post
-            {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                Content = content,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            await _postService.CreateAsync(post);
-            return CreatedAtAction(nameof(GetPost), new { id = post.Id }, post);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePost(Guid id, [FromBody] Post updatedPost)
-        {
-            var existingPost = await _postService.GetByIdAsync(id);
-            if (existingPost == null)
-                return NotFound();
-
-            if (existingPost.UserId != updatedPost.UserId)
-                return Forbid();
-
-            // Aktualizacja treści posta na podstawie przesłanego obiektu Post
-            existingPost.Content = updatedPost.Content;
-            await _postService.UpdateAsync(existingPost);
-
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePost(Guid id)
-        {
-            var existingPost = await _postService.GetByIdAsync(id);
-            if (existingPost == null)
-                return NotFound();
-
-            await _postService.DeleteAsync(id);
-            return NoContent();
-        }
-
-        /*
-        [HttpPost]
-        public async Task<IActionResult> CreatePost([FromBody] CreatePostDto createPostDto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var post = MapToPost(createPostDto);
-            post.Id = Guid.NewGuid();
-            post.UserId = GetCurrentUserId();
-            post.CreatedAt = DateTime.UtcNow;
-
-            await _postService.CreateAsync(post);
-
-            var postDto = MapToPostDto(post);
-            return CreatedAtAction(nameof(GetPost), new { id = postDto.Id }, postDto);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePost(Guid id, [FromBody] UpdatePostDto updatePostDto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var existingPost = await _postService.GetByIdAsync(id);
-            if (existingPost == null)
-                return NotFound();
-
-            if (existingPost.UserId != GetCurrentUserId())
-                return Forbid();
-
-            UpdatePostFromDto(existingPost, updatePostDto);
-            await _postService.UpdateAsync(existingPost);
-
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePost(Guid id)
-        {
-            var existingPost = await _postService.GetByIdAsync(id);
-            if (existingPost == null)
-                return NotFound();
-
-            if (existingPost.UserId != GetCurrentUserId())
-                return Forbid();
-
-            await _postService.DeleteAsync(id);
-            return NoContent();
-        }*/
-
-        private Guid GetCurrentUserId()
-        {
-            var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            return Guid.Parse(userIdString);
-        }
-
-        private PostDto MapToPostDto(Post post)
-        {
-            return new PostDto
+            var postDto = new PostDto
             {
                 Id = post.Id,
                 UserId = post.UserId,
                 Content = post.Content,
                 CreatedAt = post.CreatedAt
             };
+
+            return Ok(postDto);
         }
 
-        private Post MapToPost(CreatePostDto createPostDto)
+        [HttpPost]
+        public async Task<IActionResult> CreatePost([FromBody] CreatePostDto createPostDto)
         {
-            return new Post
+            if (createPostDto == null)
+                return BadRequest();
+
+            var post = new Post
             {
-                Content = createPostDto.Content
+                Id = Guid.NewGuid(),
+                UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
+                Content = createPostDto.Content,
+                CreatedAt = DateTime.UtcNow
             };
+
+            await _postService.CreateAsync(post);
+
+            var postDto = new PostDto
+            {
+                Id = post.Id,
+                UserId = post.UserId,
+                Content = post.Content,
+                CreatedAt = post.CreatedAt
+            };
+
+            return CreatedAtAction(nameof(GetPost), new { id = post.Id }, postDto);
         }
 
-        private void UpdatePostFromDto(Post post, UpdatePostDto updatePostDto)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdatePost(Guid id, [FromBody] UpdatePostDto updatePostDto)
         {
-            post.Content = updatePostDto.Content;
+            var existingPost = await _postService.GetByIdAsync(id);
+            if (existingPost == null)
+                return NotFound();
+
+            if (existingPost.UserId != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+                return Forbid();
+
+            existingPost.Content = updatePostDto.Content;
+            await _postService.UpdateAsync(existingPost);
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeletePost(Guid id)
+        {
+            var existingPost = await _postService.GetByIdAsync(id);
+            if (existingPost == null)
+                return NotFound();
+
+            if (existingPost.UserId != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+                return Forbid();
+
+            await _postService.DeleteAsync(id);
+            return NoContent();
         }
     }
 }
