@@ -12,6 +12,7 @@ namespace PostAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    //[Authorize] 
     public class PostController : ControllerBase
     {
         private readonly IPostService _postService;
@@ -21,21 +22,20 @@ namespace PostAPI.Controllers
             _postService = postService ?? throw new ArgumentNullException(nameof(postService));
         }
 
-        /* [HttpGet]
-          public async Task<IActionResult> GetPosts()
-          {
-              var posts = await _postService.GetAllAsync();
-              var postsDto = posts.Select(p => MapToPostDto(p)).ToList();
-              return Ok(postsDto);
-          }*/
-        //[Authorize]
         [HttpGet]
         public async Task<IActionResult> GetPosts()
         {
             try
             {
                 var posts = await _postService.GetAllAsync();
-                return Ok(posts);
+                var postsDto = posts.Select(post => new PostDto
+                {
+                    Id = post.Id,
+                    UserId = post.UserId,
+                    Content = post.Content,
+                    CreatedAt = post.CreatedAt
+                }).ToList();
+                return Ok(postsDto);
             }
             catch (Exception ex)
             {
@@ -43,7 +43,6 @@ namespace PostAPI.Controllers
             }
         }
 
-       // [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPost(Guid id)
         {
@@ -53,7 +52,15 @@ namespace PostAPI.Controllers
                 if (post == null)
                     return NotFound(new { Message = "Post not found." });
 
-                return Ok(post);
+                var postDto = new PostDto
+                {
+                    Id = post.Id,
+                    UserId = post.UserId,
+                    Content = post.Content,
+                    CreatedAt = post.CreatedAt
+                };
+
+                return Ok(postDto);
             }
             catch (Exception ex)
             {
@@ -61,48 +68,39 @@ namespace PostAPI.Controllers
             }
         }
 
-
-        /*[HttpGet("{id}")]
-        public async Task<IActionResult> GetPost(Guid id)
+        [HttpPost]
+        public async Task<IActionResult> CreatePost([FromBody] CreatePostDto createPostDto)
         {
-            var post = await _postService.GetByIdAsync(id);
-            if (post == null)
-                return NotFound();
+            if (createPostDto == null)
+                return BadRequest();
 
-            var postDto = MapToPostDto(post);
-            return Ok(postDto);
-        }*/
-
-
-        // tmp do usunięcia lub zmiany
-       // [Authorize]
-        [HttpPost("manual")]
-        public async Task<IActionResult> CreatePostManual(string content, string userId)
-        {
-            if (string.IsNullOrEmpty(userId))
-                return BadRequest("UserId is required");
             try
             {
                 var post = new Post
                 {
                     Id = Guid.NewGuid(),
-                    UserId = userId,
-                    Content = content,
+                    UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
+                    Content = createPostDto.Content,
                     CreatedAt = DateTime.UtcNow
                 };
 
                 await _postService.CreateAsync(post);
-                return CreatedAtAction(nameof(GetPost), new { id = post.Id }, post);
+                return CreatedAtAction(nameof(GetPost), new { id = post.Id }, new PostDto
+                {
+                    Id = post.Id,
+                    UserId = post.UserId,
+                    Content = post.Content,
+                    CreatedAt = post.CreatedAt
+                });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { Message = "An error occurred while creating the post.", Details = ex.Message });
-
             }
         }
-       // [Authorize]
+
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePost(Guid id, [FromBody] Post updatedPost)
+        public async Task<IActionResult> UpdatePost(Guid id, [FromBody] UpdatePostDto updatePostDto)
         {
             try
             {
@@ -110,10 +108,10 @@ namespace PostAPI.Controllers
                 if (existingPost == null)
                     return NotFound();
 
-                if (existingPost.UserId != updatedPost.UserId)
+                if (existingPost.UserId != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
                     return Forbid();
 
-                existingPost.Content = updatedPost.Content;
+                existingPost.Content = updatePostDto.Content;
                 await _postService.UpdateAsync(existingPost);
 
                 return NoContent();
@@ -124,7 +122,6 @@ namespace PostAPI.Controllers
             }
         }
 
-        //[Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePost(Guid id)
         {
@@ -134,6 +131,9 @@ namespace PostAPI.Controllers
                 if (existingPost == null)
                     return NotFound();
 
+                if (existingPost.UserId != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+                    return Forbid();
+
                 await _postService.DeleteAsync(id);
                 return NoContent();
             }
@@ -142,87 +142,5 @@ namespace PostAPI.Controllers
                 return StatusCode(500, new { Message = "An error occurred while deleting the post.", Details = ex.Message });
             }
         }
-
-        /*
-        [HttpPost]
-        public async Task<IActionResult> CreatePost([FromBody] CreatePostDto createPostDto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var post = MapToPost(createPostDto);
-            post.Id = Guid.NewGuid();
-            post.UserId = GetCurrentUserId();
-            post.CreatedAt = DateTime.UtcNow;
-
-            await _postService.CreateAsync(post);
-
-            var postDto = MapToPostDto(post);
-            return CreatedAtAction(nameof(GetPost), new { id = postDto.Id }, postDto);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePost(Guid id, [FromBody] UpdatePostDto updatePostDto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var existingPost = await _postService.GetByIdAsync(id);
-            if (existingPost == null)
-                return NotFound();
-
-            if (existingPost.UserId != GetCurrentUserId())
-                return Forbid();
-
-            UpdatePostFromDto(existingPost, updatePostDto);
-            await _postService.UpdateAsync(existingPost);
-
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePost(Guid id)
-        {
-            var existingPost = await _postService.GetByIdAsync(id);
-            if (existingPost == null)
-                return NotFound();
-
-            if (existingPost.UserId != GetCurrentUserId())
-                return Forbid();
-
-            await _postService.DeleteAsync(id);
-            return NoContent();
-        }*/
-        /*
-        private Guid GetCurrentUserId()
-        {
-            var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            return Guid.Parse(userIdString);
-        }
-
-        private PostDto MapToPostDto(Post post)
-        {
-            return new PostDto
-            {
-                Id = post.Id,
-                UserId = post.UserId,
-                Content = post.Content,
-                CreatedAt = post.CreatedAt
-            };
-        }
-
-        private Post MapToPost(CreatePostDto createPostDto)
-        {
-            return new Post
-            {
-                Content = createPostDto.Content
-            };
-        }
-
-        private void UpdatePostFromDto(Post post, UpdatePostDto updatePostDto)
-        {
-            post.Content = updatePostDto.Content;
-        }*/
     }
 }
-
