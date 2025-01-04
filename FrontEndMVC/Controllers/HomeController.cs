@@ -6,21 +6,21 @@ namespace FrontEndMVC.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly HttpClient _postApiClient;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(IHttpClientFactory httpClientFactory)
         {
-            _logger = logger;
+            _postApiClient = httpClientFactory.CreateClient("PostApi");
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
-        }
+            var postsResponse = await _postApiClient.GetAsync("/Post");
+            var posts = postsResponse.IsSuccessStatusCode
+                ? await postsResponse.Content.ReadFromJsonAsync<IEnumerable<PostViewModel>>()
+                : new List<PostViewModel>();
 
-        public IActionResult Privacy()
-        {
-            return View();
+            return View(posts);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

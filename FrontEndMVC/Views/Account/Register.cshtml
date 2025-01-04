@@ -1,0 +1,26 @@
+﻿@model FrontEndMVC.Models.RegisterViewModel
+
+<h1>Register</h1>
+<form method="post" asp-controller="Account" asp-action="Register">
+    <div class="form-group">
+        <label for="Email">Email</label>
+        <input type="email" class="form-control" asp-for="Email" />
+    </div>
+    <div class="form-group">
+        <label for="UserName">Username</label>
+        <input type="text" class="form-control" asp-for="UserName" />
+    </div>
+    <div class="form-group">
+        <label for="Password">Password</label>
+        <input type="password" class="form-control" asp-for="Password" />
+    </div>
+    <div class="form-group">
+        <label for="FirstName">First Name</label>
+        <input type="text" class="form-control" asp-for="FirstName" />
+    </div>
+    <div class="form-group">
+        <label for="LastName">Last Name</label>
+        <input type="text" class="form-control" asp-for="LastName" />
+    </div>
+    <button type="submit" class="btn btn-primary">Register</button>
+</form>

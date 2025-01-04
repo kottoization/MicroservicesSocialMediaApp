@@ -1,8 +1,21 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿@model IEnumerable<FrontEndMVC.Models.PostViewModel>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h1>Posts</h1>
+
+@if (Model.Any())
+{
+        <ul>
+        @foreach (var post in Model)
+        {
+                    <li>
+                        <h3>@post.Content</h3>
+                        <p>Created by: @post.UserId on @post.CreatedAt</p>
+                        <a asp-action="Comments" asp-route-postId="@post.Id">View Comments</a>
+                    </li>
+        }
+        </ul>
+}
+else
+{
+        <p>No posts available.</p>
+}
