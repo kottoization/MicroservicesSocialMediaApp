@@ -12,7 +12,7 @@ namespace PostAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    //[Authorize] 
+    [Authorize]
     public class PostController : ControllerBase
     {
         private readonly IPostService _postService;
@@ -25,47 +25,33 @@ namespace PostAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetPosts()
         {
-            try
+            var posts = await _postService.GetAllAsync();
+            var postsDto = posts.Select(post => new PostDto
             {
-                var posts = await _postService.GetAllAsync();
-                var postsDto = posts.Select(post => new PostDto
-                {
-                    Id = post.Id,
-                    UserId = post.UserId,
-                    Content = post.Content,
-                    CreatedAt = post.CreatedAt
-                }).ToList();
-                return Ok(postsDto);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Message = "An error occurred while fetching posts.", Details = ex.Message });
-            }
+                Id = post.Id,
+                UserId = post.UserId,
+                Content = post.Content,
+                CreatedAt = post.CreatedAt
+            }).ToList();
+            return Ok(postsDto);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPost(Guid id)
         {
-            try
-            {
-                var post = await _postService.GetByIdAsync(id);
-                if (post == null)
-                    return NotFound(new { Message = "Post not found." });
+            var post = await _postService.GetByIdAsync(id);
+            if (post == null)
+                return NotFound();
 
-                var postDto = new PostDto
-                {
-                    Id = post.Id,
-                    UserId = post.UserId,
-                    Content = post.Content,
-                    CreatedAt = post.CreatedAt
-                };
-
-                return Ok(postDto);
-            }
-            catch (Exception ex)
+            var postDto = new PostDto
             {
-                return StatusCode(500, new { Message = "An error occurred while fetching the post.", Details = ex.Message });
-            }
+                Id = post.Id,
+                UserId = post.UserId,
+                Content = post.Content,
+                CreatedAt = post.CreatedAt
+            };
+
+            return Ok(postDto);
         }
 
         [HttpPost]
@@ -74,73 +60,52 @@ namespace PostAPI.Controllers
             if (createPostDto == null)
                 return BadRequest();
 
-            try
+            var post = new Post
             {
-                var post = new Post
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
-                    Content = createPostDto.Content,
-                    CreatedAt = DateTime.UtcNow
-                };
+                Id = Guid.NewGuid(),
+                UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
+                Content = createPostDto.Content,
+                CreatedAt = DateTime.UtcNow
+            };
 
-                await _postService.CreateAsync(post);
-                return CreatedAtAction(nameof(GetPost), new { id = post.Id }, new PostDto
-                {
-                    Id = post.Id,
-                    UserId = post.UserId,
-                    Content = post.Content,
-                    CreatedAt = post.CreatedAt
-                });
-            }
-            catch (Exception ex)
+            await _postService.CreateAsync(post);
+            return CreatedAtAction(nameof(GetPost), new { id = post.Id }, new PostDto
             {
-                return StatusCode(500, new { Message = "An error occurred while creating the post.", Details = ex.Message });
-            }
+                Id = post.Id,
+                UserId = post.UserId,
+                Content = post.Content,
+                CreatedAt = post.CreatedAt
+            });
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePost(Guid id, [FromBody] UpdatePostDto updatePostDto)
         {
-            try
-            {
-                var existingPost = await _postService.GetByIdAsync(id);
-                if (existingPost == null)
-                    return NotFound();
+            var existingPost = await _postService.GetByIdAsync(id);
+            if (existingPost == null)
+                return NotFound();
 
-                if (existingPost.UserId != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
-                    return Forbid();
+            if (existingPost.UserId != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+                return Forbid();
 
-                existingPost.Content = updatePostDto.Content;
-                await _postService.UpdateAsync(existingPost);
+            existingPost.Content = updatePostDto.Content;
+            await _postService.UpdateAsync(existingPost);
 
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Message = "An error occurred while updating the post.", Details = ex.Message });
-            }
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePost(Guid id)
         {
-            try
-            {
-                var existingPost = await _postService.GetByIdAsync(id);
-                if (existingPost == null)
-                    return NotFound();
+            var existingPost = await _postService.GetByIdAsync(id);
+            if (existingPost == null)
+                return NotFound();
 
-                if (existingPost.UserId != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
-                    return Forbid();
+            if (existingPost.UserId != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+                return Forbid();
 
-                await _postService.DeleteAsync(id);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Message = "An error occurred while deleting the post.", Details = ex.Message });
-            }
+            await _postService.DeleteAsync(id);
+            return NoContent();
         }
     }
 }
