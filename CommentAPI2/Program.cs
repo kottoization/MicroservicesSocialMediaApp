@@ -6,7 +6,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.json", true, true);
 
 // Add services to the container.
-// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -18,6 +17,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(opts =>
 // Register services
 builder.Services.AddScoped<ICommentService, CommentService>();
 
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("CorsPolicy", policy =>
+    {
+        policy
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .WithOrigins("http://localhost:3000");
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -27,8 +37,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
@@ -42,7 +53,6 @@ try
 }
 catch (Exception ex)
 {
-    // Log the error during migration
     Console.WriteLine($"Error during migration: {ex.Message}");
     Console.WriteLine(ex.StackTrace);
 }
