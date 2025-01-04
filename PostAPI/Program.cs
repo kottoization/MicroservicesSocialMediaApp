@@ -70,7 +70,8 @@ builder.Services.AddCors(opt =>
     {
         policy.AllowAnyMethod()
               .AllowAnyHeader()
-              .WithOrigins("http://localhost:3000");
+              .AllowAnyOrigin(); // do testow 
+                                 //.WithOrigins("http://localhost:5047");
     });
 });
 
