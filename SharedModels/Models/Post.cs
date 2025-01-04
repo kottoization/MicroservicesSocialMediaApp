@@ -11,6 +11,5 @@ namespace SharedModels.Models
         public DateTime CreatedAt { get; set; }
 
         public ICollection<Comment> Comments { get; set; }
-       // public User User { get; set; }
     }
 }

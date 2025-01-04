@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedModels", "SharedModel
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommentAPI2", "CommentAPI2\CommentAPI2.csproj", "{70CE8A4B-3AB3-46D3-BFBF-D9DBBEF67F40}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontendMVC", "FrontEndMVC\FrontendMVC.csproj", "{5E365C7E-77CE-4A3D-A80D-E63044395BC3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{70CE8A4B-3AB3-46D3-BFBF-D9DBBEF67F40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70CE8A4B-3AB3-46D3-BFBF-D9DBBEF67F40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70CE8A4B-3AB3-46D3-BFBF-D9DBBEF67F40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E365C7E-77CE-4A3D-A80D-E63044395BC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E365C7E-77CE-4A3D-A80D-E63044395BC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E365C7E-77CE-4A3D-A80D-E63044395BC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E365C7E-77CE-4A3D-A80D-E63044395BC3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

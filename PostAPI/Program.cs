@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,7 +70,8 @@ builder.Services.AddCors(opt =>
     {
         policy.AllowAnyMethod()
               .AllowAnyHeader()
-              .WithOrigins("http://localhost:3000");
+              .AllowAnyOrigin(); // do testow 
+                                 //.WithOrigins("http://localhost:5047");
     });
 });
 
@@ -93,7 +95,8 @@ var services = scope.ServiceProvider;
 try
 {
     var context = services.GetRequiredService<ApplicationDbContext>();
-    await context.Database.MigrateAsync();
+    await context.Database.MigrateAsync();    
+
 }
 catch (Exception ex)
 {

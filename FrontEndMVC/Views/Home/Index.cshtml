@@ -1,0 +1,21 @@
+﻿@model IEnumerable<FrontEndMVC.Models.PostViewModel>
+
+<h1>Posts</h1>
+
+@if (Model.Any())
+{
+        <ul>
+        @foreach (var post in Model)
+        {
+                    <li>
+                        <h3>@post.Content</h3>
+                        <p>Created by: @post.UserId on @post.CreatedAt</p>
+                        <a asp-action="Comments" asp-route-postId="@post.Id">View Comments</a>
+                    </li>
+        }
+        </ul>
+}
+else
+{
+        <p>No posts available.</p>
+}

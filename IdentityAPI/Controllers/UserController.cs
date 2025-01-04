@@ -68,13 +68,14 @@ namespace IdentityAPI.Controllers
 
         }
 
-        [AllowAnonymous]
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<UserDto>> GetCurrentUser()
         {
             var user = await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.Email));
             return CreateUser(user);
         }
+
         [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UserDto userDto)
@@ -103,7 +104,8 @@ namespace IdentityAPI.Controllers
             }
             return BadRequest(result.Errors);
         }
-        [AllowAnonymous]
+
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDto>> GetById(Guid id)
         {
@@ -114,6 +116,7 @@ namespace IdentityAPI.Controllers
             }
             return Ok(user);
         }
+
         private UserDto CreateUser(User user)
         {
             var token = _tokenService.CreateToken(user);
@@ -125,7 +128,6 @@ namespace IdentityAPI.Controllers
                 UserName = user.UserName,
                 Token = token,
                 Email = user.Email
-
             };
         }
     }

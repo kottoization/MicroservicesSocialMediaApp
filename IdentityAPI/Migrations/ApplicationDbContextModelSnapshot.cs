@@ -168,11 +168,7 @@ namespace IdentityAPI.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("PostId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("PostId1")
+                    b.Property<Guid>("PostId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UserId")
@@ -181,7 +177,7 @@ namespace IdentityAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PostId1");
+                    b.HasIndex("PostId");
 
                     b.HasIndex("UserId");
 
@@ -340,7 +336,9 @@ namespace IdentityAPI.Migrations
                 {
                     b.HasOne("SharedModels.Models.Post", null)
                         .WithMany("Comments")
-                        .HasForeignKey("PostId1");
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("SharedModels.Models.User", null)
                         .WithMany("Comments")
@@ -351,13 +349,11 @@ namespace IdentityAPI.Migrations
 
             modelBuilder.Entity("SharedModels.Models.Post", b =>
                 {
-                    b.HasOne("SharedModels.Models.User", "User")
+                    b.HasOne("SharedModels.Models.User", null)
                         .WithMany("Posts")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SharedModels.Models.Post", b =>

@@ -1,0 +1,12 @@
+﻿@model FrontEndMVC.Models.PostViewModel
+
+<h1>Create Post</h1>
+
+<form asp-action="CreatePost" method="post">
+    <div class="form-group">
+        <label for="Content">Content</label>
+        <textarea asp-for="Content" class="form-control"></textarea>
+        <span asp-validation-for="Content" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
