@@ -12,7 +12,7 @@ namespace PostAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    //[Authorize]
+    [Authorize]
     public class PostController : ControllerBase
     {
         private readonly IPostService _postService;
