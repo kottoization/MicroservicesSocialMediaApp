@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace PostAPI.Controllers
 {
@@ -16,10 +17,12 @@ namespace PostAPI.Controllers
     public class PostController : ControllerBase
     {
         private readonly IPostService _postService;
+        private readonly ILogger<PostController> _logger;
 
-        public PostController(IPostService postService)
+        public PostController(IPostService postService, ILogger<PostController> logger)
         {
             _postService = postService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -30,6 +33,7 @@ namespace PostAPI.Controllers
             {
                 Id = post.Id,
                 UserId = post.UserId,
+                UserName = post.UserName,
                 Content = post.Content,
                 CreatedAt = post.CreatedAt
             }).ToList();
@@ -48,6 +52,7 @@ namespace PostAPI.Controllers
             {
                 Id = post.Id,
                 UserId = post.UserId,
+                UserName = post.UserName,
                 Content = post.Content,
                 CreatedAt = post.CreatedAt
             };
@@ -59,22 +64,48 @@ namespace PostAPI.Controllers
         public async Task<IActionResult> CreatePost([FromBody] CreatePostDto createPostDto)
         {
             if (createPostDto == null)
+            {
+                _logger.LogWarning("CreatePostDto is null.");
                 return BadRequest();
+            }
+
+            // Pobieramy ID użytkownika
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            // Pobieramy UserName (czyli nick)
+            var userName = User.Identity.Name;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                _logger.LogWarning("UserId is null or empty.");
+                return Unauthorized();
+            }
 
             var post = new Post
             {
                 Id = Guid.NewGuid(),
-                UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
+                UserId = userId,
+                UserName = userName,
                 Content = createPostDto.Content,
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _postService.CreateAsync(post);
+            try
+            {
+                await _postService.CreateAsync(post);
+                _logger.LogInformation($"Post created successfully. PostId: {post.Id}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating post.");
+                return StatusCode(500, "Internal server error");
+            }
+
 
             var postDto = new PostDto
             {
                 Id = post.Id,
                 UserId = post.UserId,
+                UserName = post.UserName,
                 Content = post.Content,
                 CreatedAt = post.CreatedAt
             };
@@ -89,7 +120,8 @@ namespace PostAPI.Controllers
             if (existingPost == null)
                 return NotFound();
 
-            if (existingPost.UserId != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (existingPost.UserId != currentUserId)
                 return Forbid();
 
             existingPost.Content = updatePostDto.Content;
@@ -105,7 +137,8 @@ namespace PostAPI.Controllers
             if (existingPost == null)
                 return NotFound();
 
-            if (existingPost.UserId != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (existingPost.UserId != currentUserId)
                 return Forbid();
 
             await _postService.DeleteAsync(id);

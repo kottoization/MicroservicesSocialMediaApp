@@ -75,6 +75,11 @@ builder.Services.AddCors(opt =>
     });
 });
 
+// Konfiguracja logowania
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline

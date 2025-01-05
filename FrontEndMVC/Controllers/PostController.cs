@@ -10,11 +10,13 @@ namespace FrontEndMVC.Controllers
     {
         private readonly HttpClient _postApiClient;
         private readonly HttpClient _commentApiClient;
+        private readonly ILogger<PostController> _logger;
 
-        public PostController(IHttpClientFactory httpClientFactory)
+        public PostController(IHttpClientFactory httpClientFactory, ILogger<PostController> logger)
         {
             _postApiClient = httpClientFactory.CreateClient("PostApi");
             _commentApiClient = httpClientFactory.CreateClient("CommentApi");
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index()
@@ -31,7 +33,7 @@ namespace FrontEndMVC.Controllers
             }
         }
 
-        public async Task<IActionResult> CreatePost()
+        public IActionResult CreatePost()
         {
             return View();
         }
@@ -42,13 +44,29 @@ namespace FrontEndMVC.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var response = await _postApiClient.PostAsJsonAsync("/Post", model);
+            // Wysyłamy do PostAPI. Pamiętaj, że PostAPI w [HttpPost] przyjmuje CreatePostDto,
+            // a my wysyłamy PostViewModel. Zawiera on "Content". To wystarczy, jeśli klucze nazw
+            // się pokrywają. 
+
+            _logger.LogInformation("Attempting to create a new post.");
+
+            var response = await _postApiClient.PostAsJsonAsync("/Post", new
+            {
+                Content = model.Content
+            });
+
+            _logger.LogInformation($"PostAPI responded with status code: {response.StatusCode}");
 
             if (!response.IsSuccessStatusCode)
             {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Error creating post: {response.StatusCode} - {errorContent}");
+
                 ModelState.AddModelError("", "Error creating post.");
                 return View(model);
             }
+
+            _logger.LogInformation("Post created successfully.");
 
             return RedirectToAction("Index");
         }
@@ -57,10 +75,15 @@ namespace FrontEndMVC.Controllers
         {
             try
             {
-                var response = await _commentApiClient.GetAsync($"/Comment?postId={postId}");
+                // Komentarze pobieramy z CommentAPI – natomiast w oryginale w CommentController 
+                // nie było filtra "postId". Można to zrobić analogicznie, ale tu przyjmujemy,
+                // że i tak pobiera wszystkie. Ewentualnie zmień w CommentController GET, by przyjmował postId.
+                var response = await _commentApiClient.GetAsync($"/Comment");
                 var comments = response.IsSuccessStatusCode
                     ? await response.Content.ReadFromJsonAsync<IEnumerable<CommentViewModel>>()
                     : new List<CommentViewModel>();
+
+                comments = comments.Where(c => c.PostId == postId).ToList();
 
                 ViewBag.PostId = postId;
                 return View(comments);
@@ -78,7 +101,11 @@ namespace FrontEndMVC.Controllers
             if (!ModelState.IsValid)
                 return RedirectToAction("Comments", new { postId = model.PostId });
 
-            var response = await _commentApiClient.PostAsJsonAsync("/Comment", model);
+            var response = await _commentApiClient.PostAsJsonAsync("/Comment", new
+            {
+                PostId = model.PostId,
+                Content = model.Content
+            });
 
             if (!response.IsSuccessStatusCode)
             {

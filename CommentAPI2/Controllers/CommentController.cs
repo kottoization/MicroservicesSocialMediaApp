@@ -10,7 +10,7 @@ namespace CommentAPI2.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // Wymaga autoryzacji JWT dla całego kontrolera
+    [Authorize] // Teraz wszystkie metody wymagają autoryzacji
     public class CommentController : ControllerBase
     {
         private readonly ICommentService _commentService;
@@ -21,15 +21,14 @@ namespace CommentAPI2.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous] // Pozwalamy na pobieranie wszystkich komentarzy bez autoryzacji
         public async Task<IActionResult> GetComments()
         {
+            // Możemy ewentualnie dodać param postId, ale w tym kodzie to jest prosty GET wszystkich komentarzy
             var comments = await _commentService.GetAllAsync();
             return Ok(comments);
         }
 
         [HttpGet("{id}")]
-        [AllowAnonymous] // Pozwalamy na pobieranie pojedynczego komentarza bez autoryzacji
         public async Task<IActionResult> GetComment(Guid id)
         {
             var comment = await _commentService.GetByIdAsync(id);
@@ -45,11 +44,12 @@ namespace CommentAPI2.Controllers
             if (comment == null)
                 return BadRequest();
 
-            // Pobieramy UserId z tokenu JWT
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userName = User.Identity.Name;
 
             comment.Id = Guid.NewGuid();
-            comment.UserId = userId; // Ustawiamy UserId na podstawie tokenu JWT
+            comment.UserId = userId;
+            comment.UserName = userName;
             comment.CreatedAt = DateTime.UtcNow;
 
             await _commentService.CreateAsync(comment);
@@ -63,11 +63,9 @@ namespace CommentAPI2.Controllers
             if (existingComment == null)
                 return NotFound();
 
-            // Pobieramy UserId z tokenu JWT
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
-            if (existingComment.UserId != userId)
-                return Forbid(); // Użytkownik może edytować tylko swoje komentarze
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (existingComment.UserId != currentUserId)
+                return Forbid();
 
             existingComment.Content = updatedComment.Content;
             await _commentService.UpdateAsync(existingComment);
@@ -82,11 +80,9 @@ namespace CommentAPI2.Controllers
             if (existingComment == null)
                 return NotFound();
 
-            // Pobieramy UserId z tokenu JWT
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
-            if (existingComment.UserId != userId)
-                return Forbid(); // Użytkownik może usuwać tylko swoje komentarze
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (existingComment.UserId != currentUserId)
+                return Forbid();
 
             await _commentService.DeleteAsync(id);
             return NoContent();
