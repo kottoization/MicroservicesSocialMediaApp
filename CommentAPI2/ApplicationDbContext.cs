@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SharedModels.Models;
 
-public class ApplicationDbContext : IdentityDbContext<User>
+public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
@@ -14,14 +13,16 @@ public class ApplicationDbContext : IdentityDbContext<User>
 
         // Relacja Comment -> User
         modelBuilder.Entity<Comment>()
-            .HasOne(c => c.User)
+            .HasOne<User>()
             .WithMany(u => u.Comments)
             .HasForeignKey(c => c.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        //TODO: usunąć komentarz : 
-        // Jeśli nadal chcesz utrzymywać relację z PostId, upewnij się, że nie definiujesz nawigacji
-        // i tylko ustalasz klucz obcy bez nawigacji
-        // Możesz to zrobić poprzez wyłączenie nawigacji w konfiguracji
+        // Relacja Comment -> Post
+        modelBuilder.Entity<Comment>()
+            .HasOne<Post>()
+            .WithMany()
+            .HasForeignKey(c => c.PostId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
