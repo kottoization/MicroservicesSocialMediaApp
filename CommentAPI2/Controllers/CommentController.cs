@@ -5,6 +5,7 @@ using CommentAPI2.Services;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using CommentAPI2.DTOs;
 
 namespace CommentAPI2.Controllers
 {
@@ -40,21 +41,41 @@ namespace CommentAPI2.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateComment([FromBody] Comment comment)
+        [AllowAnonymous]
+        public async Task<IActionResult> CreateComment([FromBody] CreateCommentDto createCommentDto)
         {
-            if (comment == null)
-                return BadRequest();
+            if (createCommentDto == null || string.IsNullOrWhiteSpace(createCommentDto.Content))
+                return BadRequest("Content and PostId are required.");
 
             // Pobieramy UserId z tokenu JWT
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-            comment.Id = Guid.NewGuid();
-            comment.UserId = userId; // Ustawiamy UserId na podstawie tokenu JWT
-            comment.CreatedAt = DateTime.UtcNow;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User must be authenticated.");
+
+            // Tworzymy nowy komentarz
+            var comment = new Comment
+            {
+                Id = Guid.NewGuid(),
+                PostId = createCommentDto.PostId,
+                UserId = userId,
+                Content = createCommentDto.Content,
+                CreatedAt = DateTime.UtcNow
+            };
 
             await _commentService.CreateAsync(comment);
-            return CreatedAtAction(nameof(GetComment), new { id = comment.Id }, comment);
+
+            // Opcjonalnie zwracamy uproszczone dane
+            return CreatedAtAction(nameof(GetComment), new { id = comment.Id }, new
+            {
+                comment.Id,
+                comment.PostId,
+                comment.Content,
+                comment.CreatedAt,
+                comment.UserId
+            });
         }
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateComment(Guid id, [FromBody] Comment updatedComment)
