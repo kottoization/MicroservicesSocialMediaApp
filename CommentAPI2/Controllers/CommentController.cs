@@ -11,7 +11,7 @@ namespace CommentAPI2.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    //[Authorize] // Wymaga autoryzacji JWT dla całego kontrolera
+    [Authorize] 
     public class CommentController : ControllerBase
     {
         private readonly ICommentService _commentService;
@@ -50,8 +50,8 @@ namespace CommentAPI2.Controllers
             // Pobieramy UserId z tokenu JWT
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized("User must be authenticated.");
+           // if (string.IsNullOrEmpty(userId))
+            //    return Unauthorized("User must be authenticated.");
 
             // Tworzymy nowy komentarz
             var comment = new Comment
