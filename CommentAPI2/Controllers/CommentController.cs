@@ -11,7 +11,7 @@ namespace CommentAPI2.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // Wymaga autoryzacji JWT dla całego kontrolera
+    //[Authorize] // Wymaga autoryzacji JWT dla całego kontrolera
     public class CommentController : ControllerBase
     {
         private readonly ICommentService _commentService;
