@@ -31,23 +31,47 @@ namespace FrontEndMVC.Controllers
             }
         }
 
-        public async Task<IActionResult> CreatePost()
+        public async Task<IActionResult> CreatePostForm()
         {
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreatePost(PostViewModel model)
+        public async Task<IActionResult> CreatePost(CreatePostViewModel model)
         {
             if (!ModelState.IsValid)
-                return View(model);
+            {
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine($"Validation error: {error.ErrorMessage}");
+                }
+                return View("CreatePostForm", model);
+            }
 
-            var response = await _postApiClient.PostAsJsonAsync("/Post", model);
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                ModelState.AddModelError("", "User is not authenticated.");
+                return View("CreatePostForm", model);
+            }
+
+            //var post = new PostViewModel
+            //{
+            //    Id = Guid.NewGuid(),
+            //    UserId = userId,
+            //    Content = model.Content,
+            //    CreatedAt = DateTime.UtcNow,
+            //    Comments = new List<CommentViewModel>() // Domyślna pusta lista
+            //};
+
+
+            var response = await _postApiClient.PostAsJsonAsync("/Post", new { Content = model.Content });
 
             if (!response.IsSuccessStatusCode)
             {
-                ModelState.AddModelError("", "Error creating post.");
-                return View(model);
+                var error = await response.Content.ReadAsStringAsync();
+                ModelState.AddModelError("", $"Error creating post: {error}");
+                return View("CreatePostForm", model);
             }
 
             return RedirectToAction("Index");
