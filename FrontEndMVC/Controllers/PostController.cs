@@ -48,12 +48,12 @@ namespace FrontEndMVC.Controllers
                 return View("CreatePostForm", model);
             }
 
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-            {
-                ModelState.AddModelError("", "User is not authenticated.");
-                return View("CreatePostForm", model);
-            }
+            //var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            //if (string.IsNullOrEmpty(userId))
+            //{
+            //    ModelState.AddModelError("", "User is not authenticated.");
+            //    return View("CreatePostForm", model);
+            //}
 
             //var post = new PostViewModel
             //{
