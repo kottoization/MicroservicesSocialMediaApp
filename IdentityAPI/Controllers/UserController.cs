@@ -68,54 +68,54 @@ namespace IdentityAPI.Controllers
 
         }
 
-        [Authorize]
-        [HttpGet]
-        public async Task<ActionResult<UserDto>> GetCurrentUser()
-        {
-            var user = await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.Email));
-            return CreateUser(user);
-        }
+        //[Authorize]
+        //[HttpGet]
+        //public async Task<ActionResult<UserDto>> GetCurrentUser()
+        //{
+        //    var user = await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.Email));
+        //    return CreateUser(user);
+        //}
 
-        [Authorize]
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] UserDto userDto)
-        {
-            var userToken = await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.Email));
-            var user = await _userManager.FindByIdAsync(id.ToString());
-            if (user == null)
-            {
-                return NotFound();
-            }
-            if (user.Email != userToken.Email)
-            {
-                return BadRequest();
-            }
+        //[Authorize]
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> Update(Guid id, [FromBody] UserDto userDto)
+        //{
+        //    var userToken = await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.Email));
+        //    var user = await _userManager.FindByIdAsync(id.ToString());
+        //    if (user == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    if (user.Email != userToken.Email)
+        //    {
+        //        return BadRequest();
+        //    }
 
-            user.FirstName = userDto.FirstName;
-            user.LastName = userDto.LastName;
-            user.UserName = userDto.UserName;
-            user.Email = userDto.Email;
+        //    user.FirstName = userDto.FirstName;
+        //    user.LastName = userDto.LastName;
+        //    user.UserName = userDto.UserName;
+        //    user.Email = userDto.Email;
 
-            var result = await _userManager.UpdateAsync(user);
+        //    var result = await _userManager.UpdateAsync(user);
 
-            if (result.Succeeded)
-            {
-                return Ok(user);
-            }
-            return BadRequest(result.Errors);
-        }
+        //    if (result.Succeeded)
+        //    {
+        //        return Ok(user);
+        //    }
+        //    return BadRequest(result.Errors);
+        //}
 
-        [Authorize]
-        [HttpGet("{id}")]
-        public async Task<ActionResult<UserDto>> GetById(Guid id)
-        {
-            var user = await _userManager.FindByIdAsync(id.ToString());
-            if (user == null)
-            {
-                return NotFound();
-            }
-            return Ok(user);
-        }
+        //[Authorize]
+        //[HttpGet("{id}")]
+        //public async Task<ActionResult<UserDto>> GetById(Guid id)
+        //{
+        //    var user = await _userManager.FindByIdAsync(id.ToString());
+        //    if (user == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    return Ok(user);
+        //}
 
         private UserDto CreateUser(User user)
         {

@@ -60,11 +60,16 @@ namespace PostAPI.Controllers
         {
             if (createPostDto == null)
                 return BadRequest();
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID is missing or invalid.");
+            }
 
             var post = new Post
             {
                 Id = Guid.NewGuid(),
-                UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
+                UserId = userId,
                 Content = createPostDto.Content,
                 CreatedAt = DateTime.UtcNow
             };

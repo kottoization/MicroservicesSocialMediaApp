@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using SharedModels.Models.Dto;
+using System.Net.Http.Headers;
 
 
 namespace FrontEndMVC.Controllers
@@ -45,11 +46,15 @@ namespace FrontEndMVC.Controllers
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim("JWT", user.Token)
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
+
+            //TODO: sprawdzic jak przekazywac przez front to JWT, byc moze ponizsza linijke trzeba bedzie dodac i skonfigurowac
+            //_postApiClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.Token);
 
             return RedirectToAction("Index", "Home");
         }
