@@ -34,7 +34,7 @@ namespace PostAPI.Services
             {
                 post.Comments = comments
                     .Where(comment => comment.PostId == post.Id)
-                    .ToList(); 
+                    .ToList() ?? new List<Comment>(); 
             }
 
             return posts;

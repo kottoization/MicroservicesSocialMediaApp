@@ -81,17 +81,31 @@ namespace FrontEndMVC.Controllers
             }
         }
 
+        [HttpGet]
+        public IActionResult CreateCommentForm(Guid postId)
+        {
+            var model = new CommentViewModel
+            {
+                PostId = postId
+            };
+
+            return View(model);
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddComment(CommentViewModel model)
         {
             if (!ModelState.IsValid)
-                return RedirectToAction("Comments", new { postId = model.PostId });
+            {
+                return View("CreateCommentForm", model);
+            }
 
             var response = await _commentApiClient.PostAsJsonAsync("/api/Comment", model);
 
             if (!response.IsSuccessStatusCode)
             {
                 ModelState.AddModelError("", "Error adding comment.");
+                return View("CreateCommentForm", model);
             }
 
             return RedirectToAction("Comments", new { postId = model.PostId });

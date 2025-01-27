@@ -5,7 +5,7 @@
 @if (Model.Any())
 {
     <div class="row">
-        @foreach (var post in Model.OrderByDescending(p => p.CreatedAt)) 
+        @foreach (var post in Model)
         {
             <div class="col-md-6 mb-4">
                 <div class="card">
@@ -14,17 +14,9 @@
                         <p class="card-text">
                             <small class="text-muted">Created by: @post.UserName on @post.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</small>
                         </p>
-
-                        @if (post.CommentsCount > 0)
-                        {
-                            <a asp-action="Comments" asp-route-postId="@post.Id" class="btn btn-primary">View Comments</a>
-                        }
-                        else
-                        {
-                            <p class="text-muted">No comments yet.</p>
-                        }
-
-                        <a asp-action="AddComment" asp-route-postId="@post.Id" class="btn btn-secondary mt-2">Add Comment</a>
+                        <a asp-controller="Post" asp-action="Comments" asp-route-postId="@post.Id" class="btn btn-primary">View Comments</a>
+                        
+                        <a asp-controller="Post" asp-action="CreateCommentForm" asp-route-postId="@post.Id" class="btn btn-secondary">Add Comment</a>
                     </div>
                 </div>
             </div>
