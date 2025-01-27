@@ -30,14 +30,15 @@ namespace PostAPI.Controllers
 
             foreach (var post in posts)
             {
-                var userName = await _postService.GetUserNameById(post.UserId);
+                var userName = await _postService.GetUserNameById(post.UserId); // Pobranie nazwy użytkownika
                 postsDto.Add(new PostDto
                 {
                     Id = post.Id,
                     UserId = post.UserId,
                     UserName = userName,
                     Content = post.Content,
-                    CreatedAt = post.CreatedAt
+                    CreatedAt = post.CreatedAt,
+                    CommentsCount = post.Comments.Count // Liczba komentarzy
                 });
             }
 
@@ -51,12 +52,16 @@ namespace PostAPI.Controllers
             if (post == null)
                 return NotFound();
 
+            var userName = await _postService.GetUserNameById(post.UserId); // Pobranie nazwy użytkownika
+
             var postDto = new PostDto
             {
                 Id = post.Id,
                 UserId = post.UserId,
+                UserName = userName,
                 Content = post.Content,
-                CreatedAt = post.CreatedAt
+                CreatedAt = post.CreatedAt,
+                CommentsCount = post.Comments?.Count ?? 0 // Liczba komentarzy
             };
 
             return Ok(postDto);
@@ -68,6 +73,7 @@ namespace PostAPI.Controllers
             Console.WriteLine($"\nAuthorization Header: {Request.Headers["Authorization"]}\n");
             if (createPostDto == null)
                 return BadRequest();
+
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {

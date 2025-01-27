@@ -8,5 +8,7 @@
         public string Content { get; set; }
         public DateTime CreatedAt { get; set; }
         public IEnumerable<CommentViewModel> Comments { get; set; }
+
+        public int CommentsCount { get; set; }
     }
 }

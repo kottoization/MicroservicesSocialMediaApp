@@ -17,12 +17,52 @@ namespace PostAPI.Services
         }
         public async Task<IEnumerable<Post>> GetAllAsync()
         {
-            return await _dbContext.Posts.ToListAsync();
+            // not optimal but ok for small DB
+            var posts = await _dbContext.Posts
+                .Select(post => new Post
+                {
+                    Id = post.Id,
+                    UserId = post.UserId,
+                    Content = post.Content,
+                    CreatedAt = post.CreatedAt,
+                })
+                .ToListAsync();
+
+            var comments = await _dbContext.Comments.ToListAsync();
+
+            foreach (var post in posts)
+            {
+                post.Comments = comments
+                    .Where(comment => comment.PostId == post.Id)
+                    .ToList(); 
+            }
+
+            return posts;
         }
 
         public async Task<Post> GetByIdAsync(Guid id)
         {
-            return await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == id);
+            var post = await _dbContext.Posts
+                .Where(p => p.Id == id)
+                .Select(p => new Post
+                {
+                    Id = p.Id,
+                    UserId = p.UserId,
+                    Content = p.Content,
+                    CreatedAt = p.CreatedAt,
+                })
+                .FirstOrDefaultAsync();
+
+            if (post == null)
+            {
+                return null;
+            }
+
+            post.Comments = await _dbContext.Comments
+                .Where(comment => comment.PostId == id)
+                .ToListAsync();
+
+            return post;
         }
 
         public async Task CreateAsync(Post post)
