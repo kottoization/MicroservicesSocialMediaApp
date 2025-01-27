@@ -21,7 +21,8 @@ namespace FrontEndMVC.Controllers
         {
             try
             {
-                var posts = await _postApiClient.GetFromJsonAsync<List<PostViewModel>>("/Post");
+                var posts = await _postApiClient.GetFromJsonAsync<List<PostViewModel>>("/api/Post");
+            
                 return View(posts);
             }
             catch (Exception)
@@ -39,6 +40,9 @@ namespace FrontEndMVC.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePost(CreatePostViewModel model)
         {
+
+            Console.WriteLine($"\nRequest URL: {_postApiClient.BaseAddress}Post\n");
+
             if (!ModelState.IsValid)
             {
                 foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
@@ -65,7 +69,7 @@ namespace FrontEndMVC.Controllers
             //};
 
 
-            var response = await _postApiClient.PostAsJsonAsync("/Post", new { Content = model.Content });
+            var response = await _postApiClient.PostAsJsonAsync("/api/Post", new { Content = model.Content });
 
             if (!response.IsSuccessStatusCode)
             {
@@ -74,14 +78,14 @@ namespace FrontEndMVC.Controllers
                 return View("CreatePostForm", model);
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction("Index", "Home");
         }
 
         public async Task<IActionResult> Comments(Guid postId)
         {
             try
             {
-                var response = await _commentApiClient.GetAsync($"/Comment?postId={postId}");
+                var response = await _commentApiClient.GetAsync($"/api/Comment?postId={postId}");
                 var comments = response.IsSuccessStatusCode
                     ? await response.Content.ReadFromJsonAsync<IEnumerable<CommentViewModel>>()
                     : new List<CommentViewModel>();
@@ -102,7 +106,7 @@ namespace FrontEndMVC.Controllers
             if (!ModelState.IsValid)
                 return RedirectToAction("Comments", new { postId = model.PostId });
 
-            var response = await _commentApiClient.PostAsJsonAsync("/Comment", model);
+            var response = await _commentApiClient.PostAsJsonAsync("/api/Comment", model);
 
             if (!response.IsSuccessStatusCode)
             {
