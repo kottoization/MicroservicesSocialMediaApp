@@ -26,6 +26,8 @@ public class JwtAuthorizationHandler : DelegatingHandler
             Console.WriteLine("JWT Token not found in user claims."); // Log, jeśli brak tokenu
         }
 
+        Console.WriteLine($"Request Headers: {request.Headers}");
+
         return await base.SendAsync(request, cancellationToken);
     }
 }

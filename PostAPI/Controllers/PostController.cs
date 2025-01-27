@@ -58,6 +58,7 @@ namespace PostAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePost([FromBody] CreatePostDto createPostDto)
         {
+            Console.WriteLine($"\nAuthorization Header: {Request.Headers["Authorization"]}\n");
             if (createPostDto == null)
                 return BadRequest();
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -66,6 +67,8 @@ namespace PostAPI.Controllers
                 Console.WriteLine("Unauthorized: User ID is missing or invalid.");
                 return Unauthorized("User ID is missing or invalid.");
             }
+
+            Console.WriteLine($"User ID: {userId}");
 
             var post = new Post
             {
