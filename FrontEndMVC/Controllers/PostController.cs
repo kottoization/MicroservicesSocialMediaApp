@@ -41,8 +41,6 @@ namespace FrontEndMVC.Controllers
         public async Task<IActionResult> CreatePost(CreatePostViewModel model)
         {
 
-            Console.WriteLine($"\nRequest URL: {_postApiClient.BaseAddress}Post\n");
-
             if (!ModelState.IsValid)
             {
                 foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
@@ -51,23 +49,6 @@ namespace FrontEndMVC.Controllers
                 }
                 return View("CreatePostForm", model);
             }
-
-            //var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            //if (string.IsNullOrEmpty(userId))
-            //{
-            //    ModelState.AddModelError("", "User is not authenticated.");
-            //    return View("CreatePostForm", model);
-            //}
-
-            //var post = new PostViewModel
-            //{
-            //    Id = Guid.NewGuid(),
-            //    UserId = userId,
-            //    Content = model.Content,
-            //    CreatedAt = DateTime.UtcNow,
-            //    Comments = new List<CommentViewModel>() // Domyślna pusta lista
-            //};
-
 
             var response = await _postApiClient.PostAsJsonAsync("/api/Post", new { Content = model.Content });
 
