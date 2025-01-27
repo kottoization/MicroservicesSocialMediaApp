@@ -1,21 +1,27 @@
 ﻿@model IEnumerable<FrontEndMVC.Models.PostViewModel>
 
-<h1>Posts</h1>
+<h1 class="mb-4">Posts</h1>
 
 @if (Model.Any())
 {
-        <ul>
+    <div class="row">
         @foreach (var post in Model)
         {
-                    <li>
-                        <h3>@post.Content</h3>
-                        <p>Created by: @post.UserId on @post.CreatedAt</p>
-                        <a asp-action="Comments" asp-route-postId="@post.Id">View Comments</a>
-                    </li>
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@post.Content</h5>
+                        <p class="card-text">
+                            <small class="text-muted">Created by: @post.UserId on @post.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</small>
+                        </p>
+                        <a asp-action="Comments" asp-route-postId="@post.Id" class="btn btn-primary">View Comments</a>
+                    </div>
+                </div>
+            </div>
         }
-        </ul>
+    </div>
 }
 else
 {
-        <p>No posts available.</p>
+    <p>No posts available.</p>
 }

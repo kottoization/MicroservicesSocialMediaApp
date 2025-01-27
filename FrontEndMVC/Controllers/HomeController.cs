@@ -15,7 +15,7 @@ namespace FrontEndMVC.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var postsResponse = await _postApiClient.GetAsync("/Post");
+            var postsResponse = await _postApiClient.GetAsync("/api/Post");
             var posts = postsResponse.IsSuccessStatusCode
                 ? await postsResponse.Content.ReadFromJsonAsync<IEnumerable<PostViewModel>>()
                 : new List<PostViewModel>();
