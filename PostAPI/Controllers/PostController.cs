@@ -63,6 +63,7 @@ namespace PostAPI.Controllers
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
+                Console.WriteLine("Unauthorized: User ID is missing or invalid.");
                 return Unauthorized("User ID is missing or invalid.");
             }
 

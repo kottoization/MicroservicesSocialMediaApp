@@ -43,6 +43,8 @@ namespace FrontEndMVC.Controllers
                 return View(model);
             }
 
+            Console.WriteLine($"\nJWT Token retrieved: {user.Token}\n");
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.UserName),
