@@ -12,7 +12,7 @@
                     <div class="card-body">
                         <h5 class="card-title">@post.Content</h5>
                         <p class="card-text">
-                            <small class="text-muted">Created by: @post.UserId on @post.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</small>
+                            <small class="text-muted">Created by: @post.UserName on @post.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</small>
                         </p>
                         <a asp-action="Comments" asp-route-postId="@post.Id" class="btn btn-primary">View Comments</a>
                     </div>

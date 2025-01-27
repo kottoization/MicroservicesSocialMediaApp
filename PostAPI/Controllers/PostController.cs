@@ -26,13 +26,20 @@ namespace PostAPI.Controllers
         public async Task<IActionResult> GetPosts()
         {
             var posts = await _postService.GetAllAsync();
-            var postsDto = posts.Select(post => new PostDto
+            var postsDto = new List<PostDto>();
+
+            foreach (var post in posts)
             {
-                Id = post.Id,
-                UserId = post.UserId,
-                Content = post.Content,
-                CreatedAt = post.CreatedAt
-            }).ToList();
+                var userName = await _postService.GetUserNameById(post.UserId);
+                postsDto.Add(new PostDto
+                {
+                    Id = post.Id,
+                    UserId = post.UserId,
+                    UserName = userName,
+                    Content = post.Content,
+                    CreatedAt = post.CreatedAt
+                });
+            }
 
             return Ok(postsDto);
         }

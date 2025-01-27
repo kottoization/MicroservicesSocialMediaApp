@@ -49,6 +49,12 @@ namespace PostAPI.Services
             }
         }
 
+        public async Task<string> GetUserNameById(string userId)
+        {
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            return user?.UserName ?? "Unknown User";
+        }
+
         public async Task DeleteAsync(Guid id)
         {
             var post = await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == id);
