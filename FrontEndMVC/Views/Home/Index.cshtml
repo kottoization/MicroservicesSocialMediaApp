@@ -14,9 +14,7 @@
                         <p class="card-text">
                             <small class="text-muted">Created by: @post.UserName on @post.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</small>
                         </p>
-                        <a asp-controller="Post" asp-action="Comments" asp-route-postId="@post.Id" class="btn btn-primary">View Comments</a>
-                        
-                        <a asp-controller="Post" asp-action="CreateCommentForm" asp-route-postId="@post.Id" class="btn btn-secondary">Add Comment</a>
+                        <a asp-controller="Post" asp-action="Comments" asp-route-postId="@post.Id" class="btn btn-primary">View Comments</a>                 
                     </div>
                 </div>
             </div>

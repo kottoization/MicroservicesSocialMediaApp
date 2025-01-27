@@ -1,4 +1,5 @@
-﻿using FrontEndMVC.Models;
+﻿using FrontendMVC.Models;
+using FrontEndMVC.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Json;
@@ -93,7 +94,7 @@ namespace FrontEndMVC.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddComment(CommentViewModel model)
+        public async Task<IActionResult> AddComment(CreateCommentViewModel model)
         {
             if (!ModelState.IsValid)
             {
