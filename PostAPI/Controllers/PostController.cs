@@ -12,7 +12,7 @@ namespace PostAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    //[Authorize]
     public class PostController : ControllerBase
     {
         private readonly IPostService _postService;
@@ -26,13 +26,21 @@ namespace PostAPI.Controllers
         public async Task<IActionResult> GetPosts()
         {
             var posts = await _postService.GetAllAsync();
-            var postsDto = posts.Select(post => new PostDto
+            var postsDto = new List<PostDto>();
+
+            foreach (var post in posts)
             {
-                Id = post.Id,
-                UserId = post.UserId,
-                Content = post.Content,
-                CreatedAt = post.CreatedAt
-            }).ToList();
+                var userName = await _postService.GetUserNameById(post.UserId); // Pobranie nazwy użytkownika
+                postsDto.Add(new PostDto
+                {
+                    Id = post.Id,
+                    UserId = post.UserId,
+                    UserName = userName,
+                    Content = post.Content,
+                    CreatedAt = post.CreatedAt,
+                    CommentsCount = post.Comments.Count // Liczba komentarzy
+                });
+            }
 
             return Ok(postsDto);
         }
@@ -44,12 +52,16 @@ namespace PostAPI.Controllers
             if (post == null)
                 return NotFound();
 
+            var userName = await _postService.GetUserNameById(post.UserId); // Pobranie nazwy użytkownika
+
             var postDto = new PostDto
             {
                 Id = post.Id,
                 UserId = post.UserId,
+                UserName = userName,
                 Content = post.Content,
-                CreatedAt = post.CreatedAt
+                CreatedAt = post.CreatedAt,
+                CommentsCount = post.Comments?.Count ?? 0 // Liczba komentarzy
             };
 
             return Ok(postDto);
@@ -58,13 +70,18 @@ namespace PostAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePost([FromBody] CreatePostDto createPostDto)
         {
+            Console.WriteLine($"\nAuthorization Header: {Request.Headers["Authorization"]}\n");
             if (createPostDto == null)
                 return BadRequest();
+
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
+                Console.WriteLine("Unauthorized: User ID is missing or invalid.");
                 return Unauthorized("User ID is missing or invalid.");
             }
+
+            Console.WriteLine($"User ID: {userId}");
 
             var post = new Post
             {

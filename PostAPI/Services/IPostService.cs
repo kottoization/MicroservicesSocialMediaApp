@@ -11,6 +11,7 @@ namespace PostAPI.Services
         Task<Post> GetByIdAsync(Guid id);
         Task CreateAsync(Post post);
         Task UpdateAsync(Post post);
+        Task<string> GetUserNameById(string userId);
         Task DeleteAsync(Guid id);
     }
 }

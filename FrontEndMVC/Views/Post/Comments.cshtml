@@ -1,23 +1,25 @@
 ﻿@model IEnumerable<FrontEndMVC.Models.CommentViewModel>
 
 <h1>Comments</h1>
-
-@if (Model.Any())
+<p><strong>Post ID:</strong> @ViewBag.PostId</p>
+@if (Model?.Any(c => c.PostId == ViewBag.PostId) == true)
 {
+    <h2>Existing Comments</h2>
     <ul>
-        @foreach (var comment in Model)
+        @foreach (var comment in Model.Where(c => c.PostId == ViewBag.PostId))
         {
             <li>
                 <p>@comment.Content</p>
-                <p>Created by: @comment.UserId on @comment.CreatedAt</p>
+                <p>
+                    <small>Created by: @comment.UserId on @comment.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</small>
+                </p>
             </li>
         }
     </ul>
 }
-}
 else
 {
-<p>No comments available.</p>
+    <p>No comments available for this post.</p>
 }
 
 <h2>Add a Comment</h2>
@@ -25,7 +27,7 @@ else
     <input type="hidden" name="PostId" value="@ViewBag.PostId" />
     <div class="form-group">
         <label for="Content">Comment</label>
-        <textarea name="Content" class="form-control"></textarea>
+        <textarea name="Content" class="form-control" required></textarea>
     </div>
     <button type="submit" class="btn btn-primary">Add Comment</button>
 </form>
