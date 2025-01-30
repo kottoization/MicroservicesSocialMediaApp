@@ -14,6 +14,47 @@ services:
     networks:
       - mynetwork
 
+  postapi:
+    build:
+      context: .
+      dockerfile: PostAPI/Dockerfile
+    container_name: postapi
+    ports:
+      - "5001:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    depends_on:
+      - sqlserver
+    networks:
+      - mynetwork
+
+
+  commentapi:
+    build:
+      context: .
+      dockerfile: CommentAPI2/Dockerfile
+    container_name: commentapi
+    ports:
+      - "5002:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    depends_on:
+      - sqlserver
+    networks:
+      - mynetwork
+  
+  frontend:
+    build:
+      context: .
+      dockerfile: FrontEndMVC/Dockerfile
+    container_name: frontend
+    ports:
+      - "5003:80"
+    networks:
+      - mynetwork
+
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2019-latest
     container_name: sqlserver
