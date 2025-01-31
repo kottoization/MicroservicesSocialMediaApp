@@ -3,8 +3,8 @@ version: "3.8"
 services:
   identityapi:
     build:
-      context: ./IdentityAPI
-      dockerfile: Dockerfile
+      context: ./
+      dockerfile: IdentityAPI/Dockerfile
     ports:
       - "5000:5000"
     environment:
@@ -16,8 +16,8 @@ services:
 
   postapi:
     build:
-      context: ./PostAPI
-      dockerfile: Dockerfile
+      context: ./
+      dockerfile: PostAPI/Dockerfile
     container_name: postapi
     ports:
       - "5001:80"
@@ -31,8 +31,8 @@ services:
 
   commentapi:
     build:
-      context: ./CommentAPI2
-      dockerfile: Dockerfile
+      context: ./
+      dockerfile: CommentAPI2/Dockerfile
     container_name: commentapi
     ports:
       - "5002:80"
@@ -56,7 +56,7 @@ services:
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2019-latest
-    container_name: sqlserver
+    container_name: db
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=YourStrongPassword!

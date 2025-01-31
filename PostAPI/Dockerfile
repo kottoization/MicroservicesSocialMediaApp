@@ -7,15 +7,18 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["PostAPI.csproj", "./"]
-RUN dotnet restore "./PostAPI.csproj"
+COPY PostAPI src/PostAPI
+COPY SharedModels src/SharedModels
+
+RUN dotnet restore "src/PostAPI/PostAPI.csproj"
+
 COPY . .
-WORKDIR "/src/."
-RUN dotnet build "./PostAPI.csproj" -c $BUILD_CONFIGURATION -o /app/build
+# WORKDIR "/src/."
+RUN dotnet build "PostAPI/PostAPI.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./PostAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "PostAPI/PostAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

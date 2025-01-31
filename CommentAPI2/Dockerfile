@@ -11,17 +11,19 @@ EXPOSE 443
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["CommentAPI2.csproj", "./"]
-COPY ["MicroservicesSocialMediaApp/SharedModels/SharedModels.csproj", "SharedModels/"]
-RUN dotnet restore "./CommentAPI2.csproj"
+
+COPY CommentAPI2 /src/CommentAPI2
+COPY SharedModels /src/SharedModels
+
+RUN dotnet restore "CommentAPI2/CommentAPI2.csproj"
 COPY . .
-WORKDIR "/src/."
-RUN dotnet build "./CommentAPI2.csproj" -c $BUILD_CONFIGURATION -o /app/build
+# WORKDIR "/src/."
+RUN dotnet build "CommentAPI2/CommentAPI2.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Ten etap służy do publikowania projektu usługi do skopiowania do etapu końcowego
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./CommentAPI2.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "CommentAPI2/CommentAPI2.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Ten etap jest używany w środowisku produkcyjnym lub w przypadku uruchamiania z programu VS w trybie regularnym (domyślnie, gdy nie jest używana konfiguracja debugowania)
 FROM base AS final
