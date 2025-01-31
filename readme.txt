@@ -1,3 +1,6 @@
+
+// ponizsza wersja pliku readMe nie jest w pelni aktualna 
+
 Można odpalić serwisy lokalnie (znacznie lepsze do rozbudowywania aplikacji, bo nie trzeba co chwilę budować obrazów)
 1. najpierw można odpalić frontend:
  - npm run start w ./frontend/social-app (powinien odpalić się na porcie 3000)
