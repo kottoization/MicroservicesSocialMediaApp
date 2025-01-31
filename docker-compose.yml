@@ -44,15 +44,15 @@ services:
     networks:
       - mynetwork
 
-  # frontend:
-  #   build:
-  #     context: ./FrontendMVC
-  #     dockerfile: Dockerfile
-  #   container_name: frontend
-  #   ports:
-  #     - "5003:80"
-  #   networks:
-  #     - mynetwork
+  frontend:
+    build:
+      context: ./
+      dockerfile: FrontendMVC/Dockerfile
+    container_name: frontend
+    ports:
+      - "5003:80"
+    networks:
+      - mynetwork
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2019-latest

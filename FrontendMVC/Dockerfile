@@ -11,17 +11,19 @@ EXPOSE 8080
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["FrontendMVC.csproj", "./"]
-#COPY ["SharedModels/SharedModels.csproj", "SharedModels/"]
-RUN dotnet restore "./FrontendMVC.csproj"
+
+COPY FrontendMVC /src/FrontendMVC
+COPY SharedModels /src/SharedModels
+
+RUN dotnet restore "FrontendMVC/FrontendMVC.csproj"
 COPY . .
-WORKDIR "/src/."
-RUN dotnet build "./FrontendMVC.csproj" -c $BUILD_CONFIGURATION -o /app/build
+# WORKDIR "/src/."
+RUN dotnet build "FrontendMVC/FrontendMVC.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Ten etap służy do publikowania projektu usługi do skopiowania do etapu końcowego
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./FrontendMVC.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "FrontendMVC/FrontendMVC.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Ten etap jest używany w środowisku produkcyjnym lub w przypadku uruchamiania z programu VS w trybie regularnym (domyślnie, gdy nie jest używana konfiguracja debugowania)
 FROM base AS final
