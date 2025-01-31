@@ -7,10 +7,10 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["PostAPI/PostAPI.csproj", "PostAPI/"]
-RUN dotnet restore "./PostAPI/./PostAPI.csproj"
+COPY ["PostAPI.csproj", "./"]
+RUN dotnet restore "./PostAPI.csproj"
 COPY . .
-WORKDIR "/src/PostAPI"
+WORKDIR "/src/."
 RUN dotnet build "./PostAPI.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
@@ -20,4 +20,4 @@ RUN dotnet publish "./PostAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "PostAPI.dll"]
+ENTRYPOINT ["dotnet", "PostAPI.dll","--environment=Development"]

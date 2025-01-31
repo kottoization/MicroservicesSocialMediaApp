@@ -1,9 +1,9 @@
-version: '3.8'
+version: "3.8"
 
 services:
   identityapi:
     build:
-      context: .
+      context: ./IdentityAPI
       dockerfile: Dockerfile
     ports:
       - "5000:5000"
@@ -16,8 +16,8 @@ services:
 
   postapi:
     build:
-      context: ..
-      dockerfile: PostAPI/Dockerfile
+      context: ./PostAPI
+      dockerfile: Dockerfile
     container_name: postapi
     ports:
       - "5001:80"
@@ -29,11 +29,10 @@ services:
     networks:
       - mynetwork
 
-
   commentapi:
     build:
-      context: ..
-      dockerfile: CommentAPI2/Dockerfile
+      context: ./CommentAPI2
+      dockerfile: Dockerfile
     container_name: commentapi
     ports:
       - "5002:80"
@@ -44,16 +43,16 @@ services:
       - sqlserver
     networks:
       - mynetwork
-  
-  frontend:
-    build:
-      context: ..
-      dockerfile: FrontEndMVC/Dockerfile
-    container_name: frontend
-    ports:
-      - "5003:80"
-    networks:
-      - mynetwork
+
+  # frontend:
+  #   build:
+  #     context: ./FrontendMVC
+  #     dockerfile: Dockerfile
+  #   container_name: frontend
+  #   ports:
+  #     - "5003:80"
+  #   networks:
+  #     - mynetwork
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2019-latest
