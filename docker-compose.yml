@@ -1,21 +1,10 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  frontend:
-    build:
-      context: ./frontend/social-app
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - CHOKIDAR_USEPOLLING=true # aby hot-reload działał w Dockerze
-    networks:
-      - mynetwork
-
   identityapi:
     build:
-      context: ./IdentityAPI
-      dockerfile: Dockerfile
+      context: ./
+      dockerfile: IdentityAPI/Dockerfile
     ports:
       - "5000:5000"
     environment:
@@ -25,9 +14,49 @@ services:
     networks:
       - mynetwork
 
+  postapi:
+    build:
+      context: ./
+      dockerfile: PostAPI/Dockerfile
+    container_name: postapi
+    ports:
+      - "5001:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    depends_on:
+      - sqlserver
+    networks:
+      - mynetwork
+
+  commentapi:
+    build:
+      context: ./
+      dockerfile: CommentAPI2/Dockerfile
+    container_name: commentapi
+    ports:
+      - "5002:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    depends_on:
+      - sqlserver
+    networks:
+      - mynetwork
+
+  frontend:
+    build:
+      context: ./
+      dockerfile: FrontendMVC/Dockerfile
+    container_name: frontend
+    ports:
+      - "5003:80"
+    networks:
+      - mynetwork
+
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2019-latest
-    container_name: sqlserver
+    container_name: db
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=YourStrongPassword!
